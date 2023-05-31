@@ -1,0 +1,213 @@
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>Document</title>
+</head>
+<body>
+  <h1>Your Gym Calculator</h1>
+  <form id="myForm" class="form-container">
+    <!-- Stage 1: General Info -->
+    <div id="stage1">
+      <label for="username">Name:</label>
+      <input type="text" name="username" id="username">
+      <label for="age">Age:</label>
+      <input type="number" name="age" id="age">
+      <label for="gender">Gender:</label>
+      <select id="gender" name="gender">
+        <!-- UPDATES -->
+        <option value="" selected disabled>Select your gender</option>
+        <!-- ------end -->
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Hoover Dyson 1000w</option>
+      </select>
+  
+      <button type="button" id="next1">Next</button>
+    </div>
+  
+    <!-- Stage 2: Weight and Height -->
+    <div id="stage2" style="display: none;">
+      <label for="weight">Weight (kg):</label>
+      <input type="number" name="weight" id="weight">
+      <label for="height">Height (cm)</label>
+      <input type="number" name="height" id="height">
+      <button type="button" id="prev2">Back</button>
+      <button type="button" id="next2">Next</button>
+    </div>
+  
+    <!-- Stage 3: Physical Activity and Goal -->
+    <div id="stage3" style="display: none;">
+      <label for="activity">Physical Activity:</label>
+      <select name="activity" id="activity">
+        <option value="sedentary">Sedentary</option>
+        <option value="lightly-active">Lightly Active</option>
+        <option value="moderately-active">Moderately Active</option>
+        <option value="very-active">Very Active</option>
+        <option value="extra-active">Extra Active</option>
+      </select>
+      <label for="goal">Goal:</label>
+      <select name="goal" id="goal">
+        <option value="maintain">Maintain Weight</option>
+        <option value="lose">Lose Weight</option>
+        <option value="gain">Gain Weight</option>
+      </select>
+      <button type="button" id="prev3">Back</button>
+      <button type="submit">Calculate</button>
+    </div>
+  </form>
+  
+  <script>
+    const stage1 = document.getElementById('stage1');
+    const stage2 = document.getElementById('stage2');
+    const stage3 = document.getElementById('stage3');
+    const next1 = document.getElementById('next1');
+    const prev2 = document.getElementById('prev2');
+    const next2 = document.getElementById('next2');
+    const prev3 = document.getElementById('prev3');
+  
+    next1.addEventListener('click', () => {
+      stage1.style.display = 'none';
+      stage2.style.display = 'block';
+    });
+  
+  
+    prev2.addEventListener('click', () => {
+    stage2.style.display = 'none';
+    stage1.style.display = 'block';
+  });
+
+  next2.addEventListener('click', () => {
+    stage2.style.display = 'none';
+    stage3.style.display = 'block';
+  });
+
+  prev3.addEventListener('click', () => {
+    stage3.style.display = 'none';
+    stage2.style.display = 'block';
+  });
+
+  const myForm = document.getElementById("myForm");
+
+  myForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const username = document.getElementById("username").value;
+    const age = parseInt(document.getElementById("age").value);
+    const weight = parseFloat(document.getElementById("weight").value);
+    const height = parseFloat(document.getElementById("height").value);
+    const gender = document.querySelector("#gender").value;
+    const activity = document.getElementById("activity").value;
+    const goal = document.getElementById("goal").value;
+
+    if(gender == null || gender ==  "") {
+      alert("PLease add a gender");
+      return;
+    }
+    // // Calculate BMR
+    const bmr = calculateBMR(gender, age, weight, height);
+    // Calculate calories and macros needed
+    const { caloriesNeeded, proteinGrams, fatGrams, carbGrams } = calculateCaloriesAndMacros(
+      bmr,
+      activity,
+      goal,
+      weight
+      );
+      
+    // Display the results
+    const resultDiv = document.createElement("div");
+    resultDiv.innerHTML = `
+      <h2>Results:</h2>
+      <p><strong>BMR:</strong> ${bmr}</p>
+      <p><strong>Calories Needed:</strong> ${caloriesNeeded}</p>
+      <p><strong>Protein Grams:</strong> ${proteinGrams}</p>
+      <p><strong>Fat Grams:</strong> ${fatGrams}</p>
+      <p><strong>Carb Grams:</strong> ${carbGrams}</p>
+    `;
+    myForm.appendChild(resultDiv);
+  });
+
+  function calculateBMR(gender, age, weight, height) {
+  if (gender === 'male') {
+    return Math.round(10 * weight + 6.25 * height - 5 * age + 5);
+  } else if (gender === 'female') {
+    return Math.round(10 * weight + 6.25 * height - 5 * age - 161);
+  } else {
+    // UPDATE
+    // return null;
+    return 0;
+  }
+}
+
+
+function calculateCaloriesAndMacros(bmr, activity, goal, weight) {
+  let caloriesNeeded= 0;
+  let proteinGrams = 0;
+  let fatGrams = 0;
+  let carbGrams = 0;
+
+
+  switch (activity) {
+    case 'sedentary':
+      caloriesNeeded = Math.round(bmr * 1.2);
+      break;
+    case 'lightly-active':
+      caloriesNeeded = Math.round(bmr * 1.375);
+      break;
+    case 'moderately-active':
+      caloriesNeeded = Math.round(bmr * 1.55);
+      break;
+    case 'very-active':
+      caloriesNeeded = Math.round(bmr * 1.725);
+      break;
+    case 'extra-active':
+      caloriesNeeded = Math.round(bmr * 1.9);
+      break;
+    default:
+      caloriesNeeded = 0;
+  }
+
+  switch (goal) {
+  case 'maintain':
+    proteinGrams = Math.round(weight * 1.6);
+    fatGrams = Math.round(weight * 0.4);
+    carbGrams = Math.round((caloriesNeeded - (proteinGrams * 4) - (fatGrams * 9)) / 4);
+    break;
+  case 'lose':
+    proteinGrams = Math.round(weight * 1.6);
+    fatGrams = Math.round(weight * 0.3);
+    carbGrams = Math.round((caloriesNeeded - (proteinGrams * 4) - (fatGrams * 9)) / 4);
+    break;
+  case 'gain':
+    proteinGrams = Math.round(weight * 2);
+    fatGrams = Math.round(weight * 0.5);
+    carbGrams = Math.round((caloriesNeeded - (proteinGrams * 4) - (fatGrams * 9)) / 4);
+    break;
+    default:
+      proteinGrams = 0;
+      fatGrams = 0;
+      carbGrams = 0;
+    }
+
+
+
+  return {
+    caloriesNeeded,
+    proteinGrams,
+    fatGrams,
+    carbGrams,
+  };
+}
+
+
+
+
+
+
+
+    </script>
+</body>
+
+</html>
